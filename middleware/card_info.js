@@ -1,24 +1,32 @@
+const { body, validationResult } = require('express-validator');
 const CardInfo = require('../models/card_info');
-const cardInfoService = require('../services/card_info.service.js');
+const cardInfoService = require('../services/card_info.service');
 
-// Create new card info
-const createCardInfo = async (req, res) => {
-  try {
-    const cardInfo = new CardInfo({
-      cardNumber: req.body.cardNumber,
-      type: req.body.type,
-      expirationDate: req.body.expirationDate,
-    });
-
-    const savedCardInfo = await cardInfoService.createCardInfo(cardInfo);
-    res.status(201).json({ message: 'Card info created successfully', savedCardInfo });
-  } catch (error) {
-    res.status(400).json({ message: 'Failed to create card info', error: error.message });
-  }
+const logger = (req, res, next) => {
+  console.log(`${req.method} ${req.url}`);
+  next();
 };
 
-// Get all card info
-const getAllCardInfo = async (req, res) => {
+const errorHandler = (err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'An error occurred', error: err.message });
+};
+
+const validateCardInfo = [
+  body('cardNumber').isLength({ min: 16, max: 16 }).withMessage('Card number must be 16 digits'),
+  body('type').isIn(['Visa', 'MasterCard', 'Amex']).withMessage('Invalid card type'),
+  body('expirationDate').matches(/^(0[1-9]|1[0-2])\/?([0-9]{2})$/).withMessage('Invalid expiration date'),
+
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    next();
+  }
+];
+
+const getAllCardInfo = async (req, res, next) => {
   try {
     const cardInfo = await cardInfoService.getAllCardInfo();
     res.json(cardInfo);
@@ -27,8 +35,7 @@ const getAllCardInfo = async (req, res) => {
   }
 };
 
-// Get card info by ID
-const getCardInfoById = async (req, res) => {
+const getCardInfoById = async (req, res, next) => {
   try {
     const cardInfo = await cardInfoService.getCardInfoById(req.params.id);
     if (cardInfo) {
@@ -41,8 +48,7 @@ const getCardInfoById = async (req, res) => {
   }
 };
 
-// Update card info by ID
-const updateCardInfoById = async (req, res) => {
+const updateCardInfoById = async (req, res, next) => {
   try {
     const updatedCardInfo = await cardInfoService.updateCardInfoById(req.params.id, req.body, { new: true });
     if (updatedCardInfo) {
@@ -55,8 +61,7 @@ const updateCardInfoById = async (req, res) => {
   }
 };
 
-// Delete card info by ID
-const deleteCardInfoById = async (req, res) => {
+const deleteCardInfoById = async (req, res, next) => {
   try {
     const deletedCardInfo = await cardInfoService.deleteCardInfoById(req.params.id);
     if (deletedCardInfo) {
@@ -70,7 +75,9 @@ const deleteCardInfoById = async (req, res) => {
 };
 
 module.exports = {
-  createCardInfo,
+  logger,
+  errorHandler,
+  validateCardInfo,
   getAllCardInfo,
   getCardInfoById,
   updateCardInfoById,

@@ -1,63 +1,27 @@
-const {deleteCardInfo} = require('../controllers/card_info.js');
 const CardInfo = require('../models/card_info');
 
+const createCardInfo = async (cardInfo) => {
+  return await cardInfo.save();
+};
 
-//Get all card info
 const getAllCardInfo = async () => {
-  try {
-    const cardInfo = await CardInfo.find();
-    return cardInfo;
-  } catch (error) {
-    throw new Error(error.message);
-  }
+  return await CardInfo.find();
 };
 
-
-//Get card info by Id
 const getCardInfoById = async (id) => {
-  try {
-    const cardInfo = await CardInfo.findById(id);
-    if (cardInfo) {
-      return cardInfo;
-    } else {
-      throw new Error('Card info not found');
-    }
-  } catch (error) {
-    throw new Error(error.message);
-  }
+  return await CardInfo.findById(id);
 };
 
-
-//Update card info by Id
 const updateCardInfoById = async (id, updateData) => {
-  try {
-    const updatedCardInfo = await CardInfo.findByIdAndUpdate(id, updateData, { new: true });
-    if (updatedCardInfo) {
-      return updatedCardInfo;
-    } else {
-      throw new Error('Card info not found');
-    }
-  } catch (error) {
-    throw new Error(error.message);
-  }
+  return await CardInfo.findByIdAndUpdate(id, updateData, { new: true });
 };
 
-
-//Delete card info by Id
 const deleteCardInfoById = async (id) => {
-  try {
-    const deletedCardInfo = await CardInfo.findByIdAndDelete(id);
-    if (deletedCardInfo) {
-      return { message: 'Card info deleted successfully' };
-    } else {
-      throw new Error('Card info not found');
-    }
-  } catch (error) {
-    throw new Error(error.message);
-  }
+  return await CardInfo.findByIdAndDelete(id);
 };
 
 module.exports = {
+  createCardInfo,
   getAllCardInfo,
   getCardInfoById,
   updateCardInfoById,

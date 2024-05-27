@@ -1,59 +1,74 @@
 const express = require('express');
 const router = express.Router();
 const cardInfoController = require('../controllers/card_info');
+const CardInfo = require('../models/card_info');
+const middleware = require('../middleware/card_info')
 
-// Route to create card info
+
+
+// Middleware example
+router.use(middleware.validateCardInfo);
+
+
+//create new card info
 router.post('/create', async (req, res) => {
   try {
     const cardInfo = new CardInfo({
       cardNumber: req.body.cardNumber,
-      expirationDate: req.body.expirationDate,
-      cardHolderName: req.body.cardHolderName,
       type: req.body.type,
+      expirationDate: req.body.expirationDate,
     });
 
-    const savedCardInfo = await cardInfo.save();
-    res.status(201).json(savedCardInfo);
+    await cardInfo.save();
+    res.status(201).json({ message: 'Card info created successfully', cardInfo });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ message: 'Failed to create card info', error });
   }
 });
 
 
-// Route to get all card info
+//get card info
 router.get('/get', async (req, res) => {
   try {
-    await cardInfoController.getAllCardInfo(req, res);
+    const cardInfos = await CardInfo.find();
+    res.status(200).json(cardInfos);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(400).json({ message: 'Failed to fetch card info', error });
   }
 });
 
-// Route to get card info by ID
+
+//get by id card info
 router.get('/getOne/:id', async (req, res) => {
   try {
-    await cardInfoController.getCardInfoById(req, res);
+    const cardInfo = await CardInfo.findById(req.params.id);
+    res.status(200).json(cardInfo);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(400).json({ message: 'Failed to fetch card info', error });
   }
 });
 
-// Route to update card info by ID
+
+//update by id card info
 router.patch('/update/:id', async (req, res) => {
   try {
-    await cardInfoController.updateCardInfoById(req, res);
+    const cardInfo = await CardInfo.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.status(200).json({ message: 'Card info updated successfully', cardInfo });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(400).json({ message: 'Failed to update card info', error });
   }
 });
 
-// Route to delete card info by ID
+
+//delete card info
 router.delete('/delete/:id', async (req, res) => {
   try {
-    await cardInfoController.deleteCardInfoById(req, res);
+    await CardInfo.findByIdAndDelete(req.params.id);
+    res.status(200).json({ message: 'Card info deleted successfully' });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(400).json({ message: 'Failed to delete card info', error });
   }
 });
 
 module.exports = router;
+
